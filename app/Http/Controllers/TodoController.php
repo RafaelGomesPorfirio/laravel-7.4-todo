@@ -1,111 +1,111 @@
 <?php
 
-namespace  App \ Http \ Controllers ;
+namespace App\Http\Controllers;
 
-use  App \ Modelos \ Todo ;
-use  Illuminate \ Http \ Request ;
+use App\Models\Todo;
+use Illuminate\Http\Request;
 
-classe  TodoController  estende  Controller
+class TodoController extends Controller
 {
     /**
-     * Exibir uma listagem do recurso.
+     * Display a listing of the resource.
      *
      * @return \Illuminate\Http\Response
      */
-     índice de função  pública ()
+    public function index()
     {
-        $ usuario = auth()-> usuario ();
+        $user = auth()->user();
 
-        $ is_complete_counter = 0 ;
+        $is_complete_counter = 0;
 
-        $ todos = Todo :: where ( 'user_id' , $ user -> id )-> get ();
+        $todos = Todo::where('user_id', $user->id)->get();
 
-        foreach ( $ todos  as  $ todos ) {
-            if ( $ todo -> is_complete == false ) {
-                $ is_complete_counter += 1 ;
+        foreach ($todos as $todo) {
+            if ($todo->is_complete == false) {
+                $is_complete_counter += 1;
             }
         }
 
-        return view( 'dashboard' , compact( 'user' , 'todos' , 'is_complete_counter' ));
+        return view('dashboard', compact('user', 'todos', 'is_complete_counter'));
     }
 
     /**
-     * Armazene um recurso recém-criado no armazenamento.
+     * Store a newly created resource in storage.
      *
-     * @param \App\Http\Requests\Request $request
+     * @param  \App\Http\Requests\Request  $request
      * @return \Illuminate\Http\Response
      */
-     loja de função  pública ( Requisição $ requisição ) 
+    public function store(Request $request)
     {
-        tente {
-            $ usuario = auth()-> usuario ();
+        try {
+            $user = auth()->user();
 
-            $ atributos = $ pedido -> apenas ([
-                'título' ,
-                'descrição' ,
-                'cor'
+            $attributes = $request->only([
+                'title',
+                'description',
+                'color'
             ]);
 
-            $ attribute [ 'user_id' ] = $ user -> id ;
+            $attributes['user_id'] = $user->id;
 
-            $ todo = Todo :: criar ( $ atributos );
-        } catch ( \ Throwable  $ th ) {
-            logger()-> erro ( $ th );
-            return redirect( '/todos/create' )-> with ( 'error' , 'Erro ao criar TODO' );
+            $todo = Todo::create($attributes);
+        } catch (\Throwable $th) {
+            logger()->error($th);
+            return redirect('/todos/create')->with('error', 'Erro ao criar TODO');
         }
 
-        return redirect( '/dashboard' )-> with ( 'success' , 'TODO criado com sucesso' );
+        return redirect('/dashboard')->with('success', 'TODO criado com sucesso');
     }
 
     /**
-     * Complete o recurso especificado no armazenamento.
+     * Complete the specified resource in storage.
      *
-     * @param \App\Models\Todo $todo
+     * @param  \App\Models\Todo  $todo
      * @return \Illuminate\Http\Response
      */
-     função  pública completa ( Todo  $ todo )
+    public function complete(Todo $todo)
     {
-        tente {
-            $ usuario = auth()-> usuario ();
+        try {
+            $user = auth()->user();
 
-            // Verifica se TODO é do usuário
-            if ( $ todo -> user_id !== $ user -> id ) {
-                return resposta( '' , 403 );
+            // Verificar se TODO é do usuário
+            if ($todo->user_id !== $user->id) {
+                return response('', 403);
             }
 
-            $ todo -> atualização ([ 'is_complete' => true ]);
-        } catch ( \ Throwable  $ th ) {
-            logger()-> erro ( $ th );
-            return redirect( '/dashboard' )-> with ( 'error' , 'Erro ao concluir TODO' );
+            $todo->update(['is_complete' => true]);
+        } catch (\Throwable $th) {
+            logger()->error($th);
+            return redirect('/dashboard')->with('error', 'Erro ao completar TODO');
         }
 
-        return redirect( '/dashboard' )-> with ( 'success' , 'TODO concluído com sucesso' );
+        return redirect('/dashboard')->with('success', 'TODO completado com sucesso');
     }
 
     /**
-     * Remova o recurso especificado do armazenamento.
+     * Remove the specified resource from storage.
      *
-     * @param \App\Models\Todo $todo
+     * @param  \App\Models\Todo  $todo
      * @return \Illuminate\Http\Response
      */
-     função  pública destruir ( $ todo )
+    public function destroy($todo)
     {
-        tente {
-            // Verifica se TODO é do usuário
-            $ usuario = auth()-> usuario ();
+        try {
+            // Verificar se TODO é do usuário
+            $user = auth()->user();
 
-            $ todo = Todo :: find ( $ todo );
+            $todo = Todo::find($todo);
 
-            if ( $ todo -> user_id !== $ user -> id ) {
-                return resposta( '' , 403 );
+            if ($todo->user_id !== $user->id) {
+                return response('', 403);
             }
 
-            $ todo -> deletar ();
-        } catch ( \ Throwable  $ th ) {
-            logger()-> erro ( $ th );
-            return redirect( '/dashboard' )-> with ( 'error' , 'Erro ao deletar TODO' );
+            $todo->delete();
+        } catch (\Throwable $th) {
+            logger()->error($th);
+            return redirect('/dashboard')->with('error', 'Erro ao deletar TODO');
         }
 
-        return redirect( '/dashboard' )-> with ( 'success' , 'TODO deletado com sucesso' );
+        return redirect('/dashboard')->with('success', 'TODO deletado com sucesso');
     }
 }
